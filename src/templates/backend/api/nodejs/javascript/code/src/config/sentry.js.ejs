@@ -1,0 +1,9 @@
+import 'dotenv/config';
+
+export default {
+  config: {
+    dsn: process.env.SENTRY_URL,
+    debug: true,
+    environment: process.env.NODE_ENV,
+  },
+};

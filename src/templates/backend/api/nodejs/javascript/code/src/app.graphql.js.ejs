@@ -1,0 +1,30 @@
+import './bootstrap';
+
+import { GraphQLServer } from 'graphql-yoga';
+
+import path from 'path';
+import { sentry } from 'graphql-middleware-sentry';
+
+import resolversConfig from './app/resolvers/resolvers';
+import sentryConfig from './config/sentry';
+
+// import './database';
+
+class App {
+  constructor() {
+    const { resolvers } = resolversConfig;
+
+   // this.sentryMiddleware = sentry(sentryConfig);
+
+    this.server = new GraphQLServer({
+      typeDefs: path.resolve(__dirname, 'schema.graphql'),
+      resolvers,
+      middlewares: [
+       // this.sentryMiddleware,
+      ],
+      context: ({ request }) => request,
+    });
+  }
+}
+
+export default new App().server;

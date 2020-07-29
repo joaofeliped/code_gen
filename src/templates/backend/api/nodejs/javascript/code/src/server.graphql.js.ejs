@@ -1,0 +1,18 @@
+import app from './app';
+import logger from './config/logger';
+
+app.start(
+  {
+    cors: {
+      origin: '*',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    },
+    bodyParserOptions: { limit: '40mb', type: 'application/json' },
+    port: process.env.PORT,
+  },
+  () => {
+    logger.info(`<%= name %> up on port ${process.env.PORT}`);
+  }
+);
