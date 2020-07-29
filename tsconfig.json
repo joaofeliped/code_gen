@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": false,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
     "lib": [
       "es2015",
       "scripthost",
