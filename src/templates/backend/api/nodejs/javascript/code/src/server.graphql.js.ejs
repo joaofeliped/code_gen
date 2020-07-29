@@ -13,6 +13,6 @@ app.start(
     port: process.env.PORT,
   },
   () => {
-    logger.info(`<%= name %> up on port ${process.env.PORT}`);
+    logger.info(`<%= props.name %> up on port ${process.env.PORT}`);
   }
 );
