@@ -16,7 +16,6 @@
     "moduleResolution": "node",
     "noImplicitAny": false,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
     "sourceMap": false,
     "inlineSourceMap": true,
     "outDir": "build",

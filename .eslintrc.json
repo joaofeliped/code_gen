@@ -28,6 +28,7 @@
     "class-methods-use-this": "off",
     "no-useless-constructor": "off",
     "no-param-reassign": "off",
+    "no-await-in-loop":"off",
     "@typescript-eslint/camelcase": "off",
     "@typescript-eslint/no-unused-vars": ["error", {
       "argsIgnorePattern": "_"

@@ -5,9 +5,7 @@ export default (toolbox: GluegunToolbox): void => {
     print: { success },
   } = toolbox
 
-  async function createRootFiles(folder, name): Promise<void> {
-    success(`Generated ${folder}/${name}.`)
-  }
+  async function createRootFiles(projectName: string): Promise<void> {}
 
   toolbox.createRootFiles = createRootFiles
 }

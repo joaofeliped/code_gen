@@ -1,4 +1,5 @@
 import { GluegunToolbox } from 'gluegun'
+import start from '../app/flow/Start'
 
 export default {
   name: 'generate',
@@ -10,6 +11,8 @@ export default {
       // print: { info },
     } = toolbox
 
-    const name = parameters.first
+    const answers = await start(toolbox)
+
+    console.log(answers)
   },
 }
