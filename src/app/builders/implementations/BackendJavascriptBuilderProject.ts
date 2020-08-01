@@ -1,6 +1,7 @@
 import { GluegunToolbox } from 'gluegun'
 import IBuilderProject from '../models/IBuilderProject'
 import IAnswers from '../../flow/IAnswers'
+import BackendJavascriptDependencies from '../../dependencies/BackendJavascriptDependencies'
 
 interface IRequestCodeDirectoryFiles {
   answers: IAnswers
@@ -32,7 +33,12 @@ interface IRequestConfigGraphQL {
 
 interface IRequestConfigRest {
   answers: IAnswers
+  codeDirectory: string
   srcDirectory: string
+}
+
+interface IRequestDefaultDependencies {
+  codeDirectory: string
 }
 
 class BackendJavascriptBuilderProject implements IBuilderProject {
@@ -70,7 +76,7 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
     await this.createCodeDirectoryFiles({ codeDirectory, answers })
     await this.createSrcDirectoryFiles({ srcDirectory })
     await this.createConfigDirectoryFiles({ configDirectory })
-    await this.configRest({ srcDirectory, answers })
+    await this.configRest({ codeDirectory, srcDirectory, answers })
     await this.configGraphQL({
       codeDirectory,
       appDirectory,
@@ -84,19 +90,53 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
       configDirectory,
       answers,
     })
+
+    await this.installDefaultDependencies({ codeDirectory })
+  }
+
+  private async installDefaultDependencies({
+    codeDirectory,
+  }: IRequestDefaultDependencies): Promise<void> {
+    const {
+      system: { run },
+    } = this.toolbox
+
+    const {
+      sentry,
+      dotenv,
+      winston,
+    } = BackendJavascriptDependencies.dependencies
+
+    const {
+      jest,
+      eslint,
+      nodemon,
+      prettier,
+      sucrase,
+    } = BackendJavascriptDependencies.devDependencies
+
+    await run(
+      `cd ${codeDirectory} && npm i --save ${sentry} ${dotenv} ${winston}`
+    )
+    await run(
+      `cd ${codeDirectory} && npm i --save -D ${jest} ${eslint} ${nodemon} ${prettier} ${sucrase}`
+    )
   }
 
   private async configRest({
     srcDirectory,
+    codeDirectory,
     answers,
   }: IRequestConfigRest): Promise<void> {
     const {
       template,
-      patching: { update },
+      system: { run },
       filesystem: { separator },
     } = this.toolbox
 
     const { httpTypeAnswer, projectNameAnswer } = answers
+
+    const { express, youch } = BackendJavascriptDependencies.dependencies
 
     if (httpTypeAnswer === 'Rest') {
       await template.generate({
@@ -114,6 +154,8 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
         target: `${srcDirectory}${separator}server.js`,
         props: { name: projectNameAnswer },
       })
+
+      await run(`cd ${codeDirectory} && npm i --save ${express} ${youch}`)
     }
   }
 
@@ -125,11 +167,14 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
   }: IRequestConfigGraphQL): Promise<void> {
     const {
       template,
+      system: { run },
       patching: { update },
       filesystem: { separator },
     } = this.toolbox
 
     const { httpTypeAnswer, projectNameAnswer } = answers
+
+    const { graphql } = BackendJavascriptDependencies.dependencies
 
     if (httpTypeAnswer === 'GraphQL') {
       await template.generate({
@@ -159,6 +204,8 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
 
         return pkg
       })
+
+      await run(`cd ${codeDirectory} && npm i --save ${graphql}`)
     }
   }
 
@@ -171,11 +218,17 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
   }: IRequestConfigDatabase): Promise<void> {
     const {
       template,
+      system: { run },
       patching: { update, append, prepend },
       filesystem: { separator, dir },
     } = this.toolbox
 
     const { useDatabaseAnswer } = answers
+
+    const {
+      dependencies: { database },
+      devDependencies: { devDatabase },
+    } = BackendJavascriptDependencies
 
     if (useDatabaseAnswer) {
       await template.generate({
@@ -226,6 +279,9 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
         `${rootDirectory}${separator}values.yml`,
         '\n\tPOSTGRES_USER:\n\tPOSTGRES_PASSWORD:\n\tPOSTGRES_HOST:\n\tPOSTGRES_DATABASE:\n\tPOSTGRES_DIALECT:\n'
       )
+
+      await run(`cd ${codeDirectory} && npm i --save ${database}`)
+      await run(`cd ${codeDirectory} && npm i --save -D ${devDatabase}`)
     }
   }
 

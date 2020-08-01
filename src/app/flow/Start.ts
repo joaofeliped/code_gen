@@ -108,6 +108,7 @@ export default async function start(
   nextQuestion: IQuestion
 ): Promise<void> {
   const {
+    print: { spin },
     prompt: { ask },
   } = toolbox
 
@@ -118,7 +119,13 @@ export default async function start(
   if (nextQuestion.isLast(answers)) {
     const builder = findBuilder(answers, toolbox)
 
-    await builder.build(answers)
+    const spinner = spin('Generating your project. Get ready to rock')
+    try {
+      await builder.build(answers)
+      spinner.succeed('Yeah, your project is ready. Enjoy your adventure')
+    } catch (error) {
+      spinner.fail('Oh No. Something went wrong, contact your team to help you')
+    }
 
     return
   }
