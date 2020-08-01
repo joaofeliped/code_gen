@@ -1,13 +1,35 @@
 import { GluegunToolbox } from 'gluegun'
 import IAnswers from './IAnswers'
+import findBuilder from '../build'
 
 interface IQuestion {
   type: 'input' | 'select' | 'confirm'
   name: string
   message: string
   choices?: any[]
-  next?(answer?: string): IQuestion
-  isLast(answer?: string): boolean
+  isLast(answer?: IAnswers): boolean
+  next?(answer?: IAnswers): IQuestion
+}
+
+const askUseDatabase: IQuestion = {
+  type: 'confirm',
+  name: 'useDatabaseAnswer',
+  message: 'Are you going to use database?',
+  isLast: () => true,
+  next: () => {
+    return null
+  },
+}
+
+const askHttpType: IQuestion = {
+  type: 'select',
+  name: 'httpTypeAnswer',
+  message: 'GraphQL or Rest?',
+  choices: ['GraphQL', 'Rest'],
+  isLast: () => false,
+  next: () => {
+    return askUseDatabase
+  },
 }
 
 const askNodejsLanguage: IQuestion = {
@@ -15,7 +37,12 @@ const askNodejsLanguage: IQuestion = {
   name: 'nodejsLanguageAnswer',
   message: 'Javascript or Typescript?',
   choices: ['Javascript', 'Typescript'],
-  isLast: () => true,
+  isLast: (answer) => {
+    return answer.nodejsLanguageAnswer === 'Typescript'
+  },
+  next: () => {
+    return askHttpType
+  },
 }
 
 const askBackendLanguage: IQuestion = {
@@ -23,8 +50,12 @@ const askBackendLanguage: IQuestion = {
   name: 'backendLanguageAnswer',
   message: 'What language do you want?',
   choices: ['NodeJS', 'Python'],
-  isLast: () => false,
-  next: () => askNodejsLanguage,
+  isLast: (answer) => {
+    return answer[askBackendLanguage.name] === 'Python'
+  },
+  next: () => {
+    return askNodejsLanguage
+  },
 }
 
 const askProjectRuntime: IQuestion = {
@@ -32,8 +63,12 @@ const askProjectRuntime: IQuestion = {
   name: 'projectRuntimeAnswer',
   message: 'What runtime do you want?',
   choices: ['API', 'Lambda'],
-  isLast: () => false,
-  next: () => askBackendLanguage,
+  isLast: (answer) => {
+    return answer[askProjectRuntime.name] === 'Lambda'
+  },
+  next: () => {
+    return askBackendLanguage
+  },
 }
 
 const askProjectKind: IQuestion = {
@@ -41,11 +76,22 @@ const askProjectKind: IQuestion = {
   name: 'projectKindAnswer',
   message: 'What kind of project do you want?',
   choices: ['Backend', 'Frontend', 'Mobile'],
-  isLast: () => false,
-  next: () => askProjectRuntime,
+  isLast: (answer) => {
+    return (
+      answer.projectKindAnswer === 'Frontend' ||
+      answer.projectKindAnswer === 'Mobile'
+    )
+  },
+  next: (answer) => {
+    if (answer[askProjectKind.name] === 'Backend') {
+      return askProjectRuntime
+    }
+
+    return askNodejsLanguage
+  },
 }
 
-const askNameProject: IQuestion = {
+export const askNameProject: IQuestion = {
   type: 'input',
   name: 'projectNameAnswer',
   message: 'What is the project name?',
@@ -53,29 +99,29 @@ const askNameProject: IQuestion = {
   next: () => askProjectKind,
 }
 
-const answer: IAnswers = {}
+const answers: IAnswers = {}
 
 export default async function start(
   toolbox: GluegunToolbox,
-  nextQuestion?: IQuestion
-): Promise<IAnswers> {
+  nextQuestion: IQuestion
+): Promise<void> {
   const {
     prompt: { ask },
   } = toolbox
 
-  if (!nextQuestion) {
-    nextQuestion = askNameProject
-  }
-
   const questionAnswer = await ask(nextQuestion)
 
-  answer[nextQuestion.name] = questionAnswer[nextQuestion.name]
+  answers[nextQuestion.name] = questionAnswer[nextQuestion.name]
 
-  if (nextQuestion.isLast()) {
-    return answer
+  if (nextQuestion.isLast(answers)) {
+    const builder = findBuilder(answers, toolbox)
+
+    await builder.build(answers)
+
+    return
   }
 
-  nextQuestion = nextQuestion.next(answer[nextQuestion.name])
+  nextQuestion = nextQuestion.next(answers)
 
-  return start(toolbox, nextQuestion)
+  start(toolbox, nextQuestion)
 }

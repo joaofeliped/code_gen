@@ -1,7 +1,9 @@
 export default interface IAnswers {
-  projectName?: string
-  projectKindAnswer?: string
-  projectRuntimeAnswer?: string
-  backendLanguageAnswer?: string
-  nodejsLanguageAnswer?: string
+  projectNameAnswer?: string
+  projectKindAnswer?: 'Backend' | 'Frontend' | 'Mobile'
+  projectRuntimeAnswer?: 'API' | 'Lambda'
+  backendLanguageAnswer?: 'NodeJS' | 'Python'
+  nodejsLanguageAnswer?: 'Javascript' | 'Typescript'
+  httpTypeAnswer?: 'GraphQL' | 'Rest'
+  useDatabaseAnswer?: boolean
 }
