@@ -108,11 +108,21 @@ export default async function start(
   nextQuestion: IQuestion
 ): Promise<void> {
   const {
-    print: { spin },
+    print: { spin, error },
     prompt: { ask },
   } = toolbox
 
   const questionAnswer = await ask(nextQuestion)
+
+  if (nextQuestion.type === 'input') {
+    if (
+      !questionAnswer[nextQuestion.name] ||
+      questionAnswer[nextQuestion.name].toString().trim().length === 0
+    ) {
+      error('Sorry, you must answer that question')
+      return
+    }
+  }
 
   answers[nextQuestion.name] = questionAnswer[nextQuestion.name]
 
