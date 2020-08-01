@@ -26,6 +26,7 @@ interface IRequestConfigDatabase {
 interface IRequestConfigGraphQL {
   answers: IAnswers
   srcDirectory: string
+  codeDirectory: string
   appDirectory: string
 }
 
@@ -69,7 +70,13 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
     await this.createCodeDirectoryFiles({ codeDirectory, answers })
     await this.createSrcDirectoryFiles({ srcDirectory })
     await this.createConfigDirectoryFiles({ configDirectory })
-    await this.configGraphQL({ appDirectory, srcDirectory, answers })
+    await this.configRest({ srcDirectory, answers })
+    await this.configGraphQL({
+      codeDirectory,
+      appDirectory,
+      srcDirectory,
+      answers,
+    })
     await this.configDatabase({
       rootDirectory,
       codeDirectory,
@@ -80,8 +87,8 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
   }
 
   private async configRest({
-    answers,
     srcDirectory,
+    answers,
   }: IRequestConfigRest): Promise<void> {
     const {
       template,
@@ -112,6 +119,7 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
 
   private async configGraphQL({
     answers,
+    codeDirectory,
     srcDirectory,
     appDirectory,
   }: IRequestConfigGraphQL): Promise<void> {
@@ -146,11 +154,11 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
         target: `${appDirectory}${separator}resolvers${separator}resolvers.js`,
       })
 
-      // await update(`${codeDirectory}${separator}package.json`, (pkg) => {
-      //   pkg.postbuild = "cp ./src/schema.graphql ./dist",
+      await update(`${codeDirectory}${separator}package.json`, (pkg) => {
+        pkg.scripts.postbuild = 'cp ./src/schema.graphql ./dist'
 
-      //   return pkg
-      // })
+        return pkg
+      })
     }
   }
 
@@ -192,12 +200,12 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
         target: `${codeDirectory}${separator}.sequelizerc`,
       })
 
-      // await update(`${codeDirectory}${separator}package.json`, (pkg) => {
-      //   pkg.pretest = 'NODE_ENV=test sequelize db:migrate'
-      //   pkg.posttest = 'NODE_ENV=test sequelize db:migrate:undo:all'
+      await update(`${codeDirectory}${separator}package.json`, (pkg) => {
+        pkg.scripts.pretest = 'NODE_ENV=test sequelize db:migrate'
+        pkg.scripts.posttest = 'NODE_ENV=test sequelize db:migrate:undo:all'
 
-      //   return pkg
-      // })
+        return pkg
+      })
 
       await append(
         `${codeDirectory}${separator}.env`,
