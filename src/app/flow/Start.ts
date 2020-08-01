@@ -1,11 +1,12 @@
 import { GluegunToolbox } from 'gluegun'
 import IAnswers from './IAnswers'
-import findBuilder from '../build'
+import findBuilder from '../builders'
 
 interface IQuestion {
   type: 'input' | 'select' | 'confirm'
   name: string
   message: string
+  initial?: boolean
   choices?: any[]
   isLast(answer?: IAnswers): boolean
   next?(answer?: IAnswers): IQuestion
@@ -15,6 +16,7 @@ const askUseDatabase: IQuestion = {
   type: 'confirm',
   name: 'useDatabaseAnswer',
   message: 'Are you going to use database?',
+  initial: true,
   isLast: () => true,
   next: () => {
     return null

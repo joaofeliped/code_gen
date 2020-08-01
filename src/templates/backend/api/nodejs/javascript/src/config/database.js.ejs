@@ -1,11 +1,11 @@
 require('../bootstrap');
 
 module.exports = {
-  dialect: process.env.DB_DIALECT || 'postgres',
+  dialect: process.env.POSTGRES_DIALECT,
   host: process.env.POSTGRES_HOST,
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_NAME,
+  database: process.env.POSTGRES_DATABASE,
   storage: './__tests__/database.sqlite',
   seederStorage: 'sequelize',
   logging: false,
