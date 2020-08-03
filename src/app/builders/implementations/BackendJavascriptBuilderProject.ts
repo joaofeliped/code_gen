@@ -51,7 +51,6 @@ class BackendJavascriptBuilderProject implements IBuilderProject {
   public async build(answers: IAnswers): Promise<void> {
     const {
       createRootFiles,
-      template,
       filesystem: { dir, separator },
     } = this.toolbox
     const { rootDirectory, codeDirectory } = await createRootFiles(answers)
